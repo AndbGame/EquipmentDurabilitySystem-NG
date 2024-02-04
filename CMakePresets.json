@@ -59,6 +59,9 @@
           "enableMicrosoftCodeAnalysis": true,
           "enableClangTidyCodeAnalysis": true
         }
+      },
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "cl.exe"
       }
     },
     {

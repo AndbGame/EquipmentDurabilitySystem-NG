@@ -210,6 +210,9 @@ bool FoundEquipData::CanBreak() {
 			return false;
 		else if (pForm->IsArmor() && pForm->As<RE::TESObjectARMO>()->HasKeyword(utility->keywordMagicDisallow))
 			return false;
+        if (pForm->IsArmor() && pForm->As<RE::TESObjectARMO>()->ContainsKeywordString("zad_Lockable")) {
+            return false;
+        }
 	}
 
 	// Unarmed

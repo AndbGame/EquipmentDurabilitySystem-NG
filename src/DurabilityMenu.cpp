@@ -563,8 +563,14 @@ void DurabilityMenu::OnMenuOpen() {
 
 		ms_pSingleton = this;
 
-		if (ini.GetWidgetSettings("ToggleKeyCode") != 0)
+		if (ini.GetWidgetSettings("ToggleKeyCode") != 0) {
 			InputEventHandler::Register();
+
+			if (ini.GetWidgetSettings("ToggleDuration") > 0)
+				visible = false;
+			else
+				visible = true;
+		}
 	}
 }
 

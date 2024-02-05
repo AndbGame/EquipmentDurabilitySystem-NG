@@ -10,7 +10,13 @@ void FoundEquipData::GenerateName() {
 	RE::InventoryEntryData NewEntry = RE::InventoryEntryData(pForm->As<RE::TESBoundObject>(), pExtraData->GetCount());
 	NewEntry.AddExtraList(pExtraData);
 
-	name = std::string(NewEntry.GetDisplayName());
+	// Set name to unarmed, or the object fine
+	if (pForm->formID == 0x0001F4)
+		name = "Unarmed";
+	else
+		name = std::string(NewEntry.GetDisplayName());
+
+	// Add the poison if applicable
 	if (pForm->IsWeapon() && ini.GetWidgetSettings("HidePoisonName") == 0 && pExtraData->HasType(RE::ExtraDataType::kPoison)) {
 		RE::ExtraPoison* xPoison = static_cast<RE::ExtraPoison*>(pExtraData->GetByType(RE::ExtraDataType::kPoison));
 		if (xPoison && xPoison->poison)

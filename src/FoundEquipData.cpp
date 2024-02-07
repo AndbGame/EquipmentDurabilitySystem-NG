@@ -210,9 +210,6 @@ bool FoundEquipData::CanBreak() {
 			return false;
 		else if (pForm->IsArmor() && pForm->As<RE::TESObjectARMO>()->HasKeyword(utility->keywordMagicDisallow))
 			return false;
-        if (pForm->IsArmor() && pForm->As<RE::TESObjectARMO>()->ContainsKeywordString("zad_Lockable")) {
-            return false;
-        }
 	}
 
 	// Unarmed
@@ -282,6 +279,7 @@ FoundEquipData FoundEquipData::FindEquippedWeapon(RE::InventoryChanges *exChange
 
 FoundEquipData FoundEquipData::FindEquippedArmor(RE::InventoryChanges *exChanges, RE::BGSBipedObjectForm::BipedObjectSlot slotMask) {
 	FoundEquipData equipData;
+    auto utility = Utility::GetSingleton();
 
 	if (exChanges->entryList) {
 		for (const auto& pEntry : *exChanges->entryList) {
@@ -291,6 +289,28 @@ FoundEquipData FoundEquipData::FindEquippedArmor(RE::InventoryChanges *exChanges
 			for (const auto& pExtraDataList : *pEntry->extraLists) {
 				if (pExtraDataList) {
 					if (pExtraDataList->HasType(RE::ExtraDataType::kWorn) || pExtraDataList->HasType(RE::ExtraDataType::kWornLeft)) {
+                        auto obj = pEntry->GetObject();
+                        if (obj->IsArmor()) {
+                            auto armo = obj->As<RE::TESObjectARMO>();
+                            // check that is armor
+                            // TODO: HasKeywordInArray
+                            if (!armo->HasKeyword(utility->keywordJewelry) &&
+                                !armo->HasKeyword(utility->keywordClothing) &&
+                                !armo->ContainsKeywordString("ArmorHeavy") &&
+                                !armo->ContainsKeywordString("ArmorShield") &&
+                                !armo->ContainsKeywordString("ArmorLight")) {
+                                auto file = armo->GetFile();
+                                std::string_view pluginName = {};
+                                if (file != nullptr) {
+                                    pluginName = file->GetFilename();
+                                }
+                                logger::info("FindEquippedArmor skipped by not armor <{}:{:08X}:{}:{}>",
+                                             pluginName, armo->GetFormID(),
+                                             armo->GetFormEditorID() /* can be empty */,
+                                             armo->GetName() /* can be empty */);
+                                continue;
+                            }
+                        }
 						equipData.pForm = pEntry->GetObject();
 						equipData.pExtraData = pExtraDataList;
 

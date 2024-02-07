@@ -57,6 +57,11 @@ static void ShuffleSlots(std::array<RE::BGSBipedObjectForm::BipedObjectSlot, 4> 
 	std::shuffle(slots->begin(), slots->end(), mt);
 }
 
+static void ShuffleSlots(std::vector<RE::BGSBipedObjectForm::BipedObjectSlot>* slots) {
+    std::lock_guard<std::mutex> guard(lock_mt);
+    std::shuffle(slots->begin(), slots->end(), mt);
+}
+
 static double GetRandom(double a, double b) {
 	std::uniform_real_distribution<> score(a, b);
 	std::lock_guard<std::mutex> guard(lock_mt);
@@ -200,12 +205,56 @@ public:
 
 						// Decay armor, amrmor slots are shuffled for decay loss
 						} else {
-							std::array<RE::BGSBipedObjectForm::BipedObjectSlot, 4> slots = { RE::BGSBipedObjectForm::BipedObjectSlot::kHead, RE::BGSBipedObjectForm::BipedObjectSlot::kBody, RE::BGSBipedObjectForm::BipedObjectSlot::kHands, RE::BGSBipedObjectForm::BipedObjectSlot::kFeet };
-							ShuffleSlots(&slots);
+                            /*std::array<RE::BGSBipedObjectForm::BipedObjectSlot, 4> slots = { 
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kHead, 
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kBody, 
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kHands, 
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kFeet
+                            };
+							ShuffleSlots(&slots);*/
+
+                            std::vector<RE::BGSBipedObjectForm::BipedObjectSlot> slots = {
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kHead,
+                                //RE::BGSBipedObjectForm::BipedObjectSlot::kHair,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kBody,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kHands,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kForearms,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kAmulet,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kRing,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kFeet,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kCalves,
+                                //RE::BGSBipedObjectForm::BipedObjectSlot::kShield,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kTail,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kLongHair,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kCirclet,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kEars,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kModMouth,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kModNeck,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kModChestPrimary,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kModBack,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kModMisc1,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kModPelvisPrimary,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kDecapitateHead,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kDecapitate,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kModPelvisSecondary,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kModLegRight,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kModLegLeft,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kModFaceJewelry,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kModChestSecondary,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kModShoulder,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kModArmLeft,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kModArmRight,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kModMisc2,
+                                RE::BGSBipedObjectForm::BipedObjectSlot::kFX01
+                            };
+                            ShuffleSlots(&slots);
 
 							for (RE::BGSBipedObjectForm::BipedObjectSlot slot : slots) {
 								FoundEquipData eqD_armor = FoundEquipData::FindEquippedArmor(exChanges, slot);
 								if (eqD_armor.pForm) {
+                                    logger::info("TemperDecay <{:08X}:{}> => <{:08X}:{}> health={}", actor->GetFormID(),
+                                                 actor->GetName(), eqD_armor.pForm->GetFormID(),
+                                                 eqD_armor.pForm->GetName(), eqD_armor.GetItemHealthPercent());
 									TemperDecay(eqD_armor, actor, (a_event->flags & RE::TESHitEvent::Flag::kPowerAttack) != RE::TESHitEvent::Flag::kNone);
 									break;
 								} else if (slot == RE::BGSBipedObjectForm::BipedObjectSlot::kHead) {

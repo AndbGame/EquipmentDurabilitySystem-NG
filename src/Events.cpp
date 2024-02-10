@@ -188,7 +188,9 @@ public:
 				if (exChanges) {
 					RE::TESForm* form = RE::TESForm::LookupByID(a_event->source);
 
-					if (form && ((form->formType == RE::FormType::Weapon && !form->As<RE::TESObjectWEAP>()->IsStaff()) || (form->formType == RE::FormType::Armor && form->As<RE::TESObjectARMO>()->IsShield()))) {
+					if (form &&
+                        ((form->formType == RE::FormType::Weapon /* && !form->As<RE::TESObjectWEAP>()->IsStaff()*/) ||
+                         (form->formType == RE::FormType::Armor && form->As<RE::TESObjectARMO>()->IsShield()))) {
 						
 						// Decay weapon/shield if it was used or parried with
 						if ((a_event->flags & RE::TESHitEvent::Flag::kHitBlocked) != RE::TESHitEvent::Flag::kNone) {
@@ -322,7 +324,7 @@ static void GetCloseEquipment(std::set<RE::TESObjectREFR*> *containerlist, std::
 
 	if (TES) {
 		static double fRadiusSquare = std::pow(7000, 2.0);
-		TES->ForEachReferenceInRange(utility->GetPlayer(), fRadiusSquare, [&](RE::TESObjectREFR& b_ref) {
+        utility->ForEachReferenceInRange(utility->GetPlayer(), fRadiusSquare, [&](RE::TESObjectREFR& b_ref) {
 			if (!b_ref.IsDisabled() && !b_ref.IsPlayerRef() && !b_ref.IsPlayer()) {
 				RE::TESObjectREFR* newRef = &b_ref;
 				if (b_ref.formType == RE::FormType::ActorCharacter || b_ref.GetBaseObject()->formType == RE::FormType::Container) {

@@ -82,7 +82,8 @@ public:
         else
             return false;
     }
-    
+
+    // Workaround for 1170
     static void ForEachReferenceInRange(
         RE::TESObjectREFR* origin, float radius,
         std::function<RE::BSContainer::ForEachResult(RE::TESObjectREFR& ref)> callback) {

@@ -28,6 +28,9 @@ struct FoundEquipData {
 	bool CanBreak();
 	bool CanTemper();
 
+	float BreakChance();
+	float DegredationRate();
+
 	static FoundEquipData FindEquippedWeapon(RE::InventoryChanges *exChanges, bool abLeftHand, RE::TESForm* form);
 	static FoundEquipData FindEquippedArmor(RE::InventoryChanges *exChanges, RE::BGSBipedObjectForm::BipedObjectSlot slotMask);
 };

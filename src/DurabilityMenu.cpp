@@ -453,7 +453,7 @@ DurabilityMenu::EventResult DurabilityMenu::ProcessEvent(const RE::MenuOpenClose
 
 		if (a_event->opening && uiMovie->GetVisible()) {
 			RE::GPtr<RE::IMenu> menu = ui->GetMenu(a_event->menuName);
-			if (menu && (menu->menuFlags & RE::UI_MENU_FLAGS::kDontHideCursorWhenTopmost) != RE::UI_MENU_FLAGS::kNone || (menu->menuFlags & RE::UI_MENU_FLAGS::kPausesGame) != RE::UI_MENU_FLAGS::kNone)
+			if (menu && (menu->menuFlags.any(RE::UI_MENU_FLAGS::kDontHideCursorWhenTopmost) || menu->menuFlags.any(RE::UI_MENU_FLAGS::kPausesGame)))
 				uiMovie->SetVisible(false);
 			else if (utility->IsSystemMenu(a_event->menuName))
 				uiMovie->SetVisible(false);

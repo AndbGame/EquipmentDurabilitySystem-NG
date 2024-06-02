@@ -39,23 +39,32 @@ private:
 	void ToLower(std::string &str);
 	bool stricmp(const char* str_1, const char* str_2);
 	std::vector<std::string> split(std::string str, char delim);
+	double MaterialRate(std::span<RE::BGSKeyword*> keywords);
 
 	void SetVendorList();
 
 	void SetSettings();
-	void SetINIData1(std::list<CSimpleIniA::Entry> *list, const char* section);
-	void SetINIData1(std::list<CSimpleIniA::Entry> *list, const char* section, std::unordered_map<std::string, double> *map);
-	void SetINIData2(std::list<CSimpleIniA::Entry> *list, std::unordered_set<int> *set);
-	void SetINIData3(std::list<CSimpleIniA::Entry> *list, const wchar_t* filename);
+	void SetINIData1(std::list<CSimpleIniA::Entry> *list, const char* section, CSimpleIniA *iniSettings);
+	void SetINIData1(std::list<CSimpleIniA::Entry> *list, const char* section, std::unordered_map<std::string, double> *map, CSimpleIniA *iniSettings);
+	void SetINIData2(std::list<CSimpleIniA::Entry> *list, std::unordered_set<int> *set, CSimpleIniA *iniBreak);
+	void SetINIData3(std::list<CSimpleIniA::Entry> *list, const wchar_t* filename, CSimpleIniA *iniEnch);
+	void SetINIData4(std::list<CSimpleIniA::Entry> *list, const char* section, std::unordered_map<std::string, double> *map, CSimpleIniA *iniSettings);
+
+	
+	void KeywordDecoder(std::unordered_map<std::string, double> *map, std::string materialType, double dValue);
+
 	void ShowSettings();
 
 	// System Settings
 	std::unordered_map<std::string, int> degradationMap;
-	std::unordered_map<std::string, double> degradationRateMap;
-	std::unordered_map<std::string, double> breakChanceMap;
 	std::unordered_map<std::string, int> temperMap;
 	std::unordered_map<std::string, int> enchantMap;
 	std::unordered_map<std::string, int> widgetMap;
+
+	// Degradation Rates
+	std::unordered_map<std::string, double> degradationRateMap;
+	std::unordered_map<std::string, double> breakChanceMap;
+	std::unordered_map<std::string, double> materialMap;
 
 	// Break Forms
 	std::unordered_set<int> noBreakForms;

@@ -149,9 +149,13 @@ static void TemperDecay(FoundEquipData eqD, RE::Actor* actor, bool powerAttack) 
 	if (rate == 0.0)
 		return;
 
+	logger::debug("Initial Rate: {}", rate);
+
 	// Health Degredation
 	if (powerAttack)
 		rate *= ini.GetDegradationRateSettings("PowerAttackMultiplier");
+
+	logger::debug("Power Attack Rate: {}", rate);
 
 	if (actor != utility->GetPlayer())
 	{
@@ -160,6 +164,8 @@ static void TemperDecay(FoundEquipData eqD, RE::Actor* actor, bool powerAttack) 
 		else
 			rate *= ini.GetDegradationRateSettings("NPCMultiplier");
 	}
+
+	logger::debug("Final Rate: {}", rate);
 
 	itemHealthPercent -= GetRandom(rate, std::pow(rate + 1.0, 2.0));
 
@@ -193,17 +199,17 @@ public:
 					if (form &&
                         ((form->formType == RE::FormType::Weapon /* && !form->As<RE::TESObjectWEAP>()->IsStaff()*/) ||
                          (form->formType == RE::FormType::Armor && form->As<RE::TESObjectARMO>()->IsShield()))) {
-						
+                        bool powerattack = a_event->flags.any(RE::TESHitEvent::Flag::kPowerAttack);
 						// Decay weapon/shield if it was used or parried with
-						if ((a_event->flags & RE::TESHitEvent::Flag::kHitBlocked) != RE::TESHitEvent::Flag::kNone) {
+						if (a_event->flags.any(RE::TESHitEvent::Flag::kHitBlocked)) {
 							FoundEquipData eqD_armor = FoundEquipData::FindEquippedArmor(exChanges, RE::BGSBipedObjectForm::BipedObjectSlot::kShield);
 							if (eqD_armor.pForm) {
-								TemperDecay(eqD_armor, actor, (a_event->flags & RE::TESHitEvent::Flag::kPowerAttack) != RE::TESHitEvent::Flag::kNone);
-							} else{
+								TemperDecay(eqD_armor, actor, powerattack);
+							} else {
 								RE::TESForm* weap = actor->GetEquippedObject(false);
 								if (weap) {
 									if (!weap->As<RE::TESObjectWEAP>()->IsBound())
-										TemperDecay(FoundEquipData::FindEquippedWeapon(exChanges, false, weap), actor, (a_event->flags & RE::TESHitEvent::Flag::kPowerAttack) != RE::TESHitEvent::Flag::kNone);
+										TemperDecay(FoundEquipData::FindEquippedWeapon(exChanges, false, weap), actor, powerattack);
 								}
 							}
 
@@ -256,15 +262,12 @@ public:
 							for (RE::BGSBipedObjectForm::BipedObjectSlot slot : slots) {
 								FoundEquipData eqD_armor = FoundEquipData::FindEquippedArmor(exChanges, slot);
 								if (eqD_armor.pForm) {
-                                    logger::info("TemperDecay <{:08X}:{}> => <{:08X}:{}> health={}", actor->GetFormID(),
-                                                 actor->GetName(), eqD_armor.pForm->GetFormID(),
-                                                 eqD_armor.pForm->GetName(), eqD_armor.GetItemHealthPercent());
-									TemperDecay(eqD_armor, actor, (a_event->flags & RE::TESHitEvent::Flag::kPowerAttack) != RE::TESHitEvent::Flag::kNone);
+									TemperDecay(eqD_armor, actor, powerattack);
 									break;
 								} else if (slot == RE::BGSBipedObjectForm::BipedObjectSlot::kHead) {
 									eqD_armor = FoundEquipData::FindEquippedArmor(exChanges, RE::BGSBipedObjectForm::BipedObjectSlot::kHair);
 									if (eqD_armor.pForm) {
-										TemperDecay(eqD_armor, actor, (a_event->flags & RE::TESHitEvent::Flag::kPowerAttack) != RE::TESHitEvent::Flag::kNone);
+										TemperDecay(eqD_armor, actor, powerattack);
 										break;
 									}
 								}
@@ -282,27 +285,28 @@ public:
 				if (exChanges) {
 					RE::TESForm* form = RE::TESForm::LookupByID(a_event->source);
 					if (form) {
+						bool powerattack = a_event->flags.any(RE::TESHitEvent::Flag::kPowerAttack);
 						if (form->formType == RE::FormType::Weapon) {
 							RE::TESObjectWEAP* weap = form->As<RE::TESObjectWEAP>();
 							if (!weap->IsStaff() && !weap->IsBound()) {
+
+								// Compensate for 2 of the same weapons in each hand by first matching to the right hand, and then checking for a left handed attack
 								if (form == actor->GetEquippedObject(false)) {
 									if (form == actor->GetEquippedObject(true)) {
 										bool bLeftHandAttack;
 										static RE::BSFixedString strLeftHandAttack = "bLeftHandAttack";
 										if (actor->GetGraphVariableBool(strLeftHandAttack, bLeftHandAttack) && bLeftHandAttack)
-											TemperDecay(FoundEquipData::FindEquippedWeapon(exChanges, true, form), actor, (a_event->flags & RE::TESHitEvent::Flag::kPowerAttack) != RE::TESHitEvent::Flag::kNone);
+											TemperDecay(FoundEquipData::FindEquippedWeapon(exChanges, true, form), actor, powerattack);
 										else
-											TemperDecay(FoundEquipData::FindEquippedWeapon(exChanges, false, form), actor, (a_event->flags & RE::TESHitEvent::Flag::kPowerAttack) != RE::TESHitEvent::Flag::kNone);
-									} else {
-										TemperDecay(FoundEquipData::FindEquippedWeapon(exChanges, false, form), actor, (a_event->flags & RE::TESHitEvent::Flag::kPowerAttack) != RE::TESHitEvent::Flag::kNone);
-									}
-								} else if (form == actor->GetEquippedObject(true)) {
-									TemperDecay(FoundEquipData::FindEquippedWeapon(exChanges, true, form), actor, (a_event->flags & RE::TESHitEvent::Flag::kPowerAttack) != RE::TESHitEvent::Flag::kNone);
-								}
+											TemperDecay(FoundEquipData::FindEquippedWeapon(exChanges, false, form), actor, powerattack);
+									} else
+										TemperDecay(FoundEquipData::FindEquippedWeapon(exChanges, false, form), actor, powerattack);
+								} else if (form == actor->GetEquippedObject(true))
+									TemperDecay(FoundEquipData::FindEquippedWeapon(exChanges, true, form), actor, powerattack);
 							}
 						} else if (form->formType == RE::FormType::Armor) {
 							if (form->As<RE::TESObjectARMO>()->HasPartOf(RE::BGSBipedObjectForm::BipedObjectSlot::kShield)) {
-								TemperDecay(FoundEquipData::FindEquippedArmor(exChanges, RE::BGSBipedObjectForm::BipedObjectSlot::kShield), actor, (a_event->flags & RE::TESHitEvent::Flag::kPowerAttack) != RE::TESHitEvent::Flag::kNone);
+								TemperDecay(FoundEquipData::FindEquippedArmor(exChanges, RE::BGSBipedObjectForm::BipedObjectSlot::kShield), actor, powerattack);
 							}
 						}
 					}
@@ -454,7 +458,7 @@ static void DynamicTemperEnchant() {
 					if (ini.GetTemperSettings("DisableDynamicTemper") == 0) {
 						int chanceTemper = ini.GetTemperSettings("TemperChance");
 						if (ref->GetBaseObject()->formType == RE::FormType::Container && ini.IsVendorContainer(ref))
-							chanceTemper = ini.GetEnchantSettings("VendorTemperChance");
+							chanceTemper = ini.GetTemperSettings("VendorTemperChance");
 						else if (xRefType && (xRefType->locRefType == utility->locationBoss || xRefType->locRefType == utility->locationBossContainer))
 							chanceTemper = ini.GetTemperSettings("BossTemperChance");
 

@@ -27,13 +27,13 @@ void FoundEquipData::GenerateName() {
 
 float FoundEquipData::GetItemHealthPercent() {
 	if (!pExtraData)
-		return 1.0f;
+		return 1.05f;
 
 	RE::ExtraHealth* xHealth = static_cast<RE::ExtraHealth*>(pExtraData->GetByType(RE::ExtraDataType::kHealth));
 	if (xHealth)
 		return xHealth->health;
 
-	return 1.0f;
+	return 1.05f;
 }
 
 void FoundEquipData::SetItemHealthPercent(float value) {

@@ -96,6 +96,8 @@ static void RemoveEquipment(FoundEquipData eqD, RE::Actor* actor) {
 		auto msg = std::format("Your {} has broken", eqD.pForm->GetName());
 		utility->ShowNotification(msg,false,"VOCShoutImpactDisarm");
 	}
+    logger::info("RemoveEquipment <{:08X}:{}> => <{:08X}:{}>", actor->GetFormID(), actor->GetName(),
+                 eqD.pForm->GetFormID(), eqD.pForm->GetName());
 	actor->RemoveItem(eqD.pForm->As<RE::TESBoundObject>(), 1, RE::ITEM_REMOVE_REASON::kRemove, eqD.pExtraData, nullptr, 0, 0);
 	actor->Update(0);
 }
@@ -116,7 +118,7 @@ static void TemperDecay(FoundEquipData eqD, RE::Actor* actor, bool powerAttack) 
 	{
 		double chance = ini.GetBreakChanceSettings(eqD.pForm);
 
-		if (chance != 0.0 && eqD.CanBreak())
+		if (chance != 0.0 && eqD.CanBreak() && actor->HasKeywordString("ActorTypeNPC")) // exclude creatures
 		{
 			if (ini.GetDegradationSettings("IncreaseDurability") == 1 && itemHealthPercent > 1.0f)
 				chance *= 1.0 - ((itemHealthPercent - 1.0f) / (ini.EquipmentHealthThreshold - 1.0f));

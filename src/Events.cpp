@@ -197,10 +197,11 @@ public:
 							if (eqD_armor.pForm) {
 								TemperDecay(eqD_armor, actor, powerattack);
 							} else {
-								RE::TESForm* weap = actor->GetEquippedObject(false);
+								RE::TESForm* obj = actor->GetEquippedObject(false);
+                                auto weap = obj->As<RE::TESObjectWEAP>();
 								if (weap) {
-									if (!weap->As<RE::TESObjectWEAP>()->IsBound())
-										TemperDecay(FoundEquipData::FindEquippedWeapon(exChanges, false, weap), actor, powerattack);
+									if (!weap->IsBound())
+                                        TemperDecay(FoundEquipData::FindEquippedWeapon(exChanges, false, obj), actor, powerattack);
 								}
 							}
 

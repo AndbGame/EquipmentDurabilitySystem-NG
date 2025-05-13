@@ -42,11 +42,10 @@ public:
     }
 
     static void ShowNotification(std::string msg, bool messageBox = false, const char* a_soundToPlay = 0) {
-        if (messageBox) {
+        if (messageBox)
             RE::DebugMessageBox(msg.c_str());
-        } else {
+        else
             RE::DebugNotification(msg.c_str(), a_soundToPlay);
-        }
     }
 
     static bool IsSystemMenu(RE::BSFixedString menuName) {
@@ -92,8 +91,7 @@ public:
             auto* tesSingleton = RE::TES::GetSingleton();
             auto* interiorCell = tesSingleton->interiorCell;
             if (interiorCell) {
-                interiorCell->ForEachReferenceInRange(originPos, radius,
-                                                      [&](RE::TESObjectREFR& a_ref) { return callback(a_ref); });
+                interiorCell->ForEachReferenceInRange(originPos, radius, [&](RE::TESObjectREFR& a_ref) { return callback(a_ref); });
             } else {
                 if (const auto gridLength = tesSingleton->gridCells ? tesSingleton->gridCells->length : 0;
                     gridLength > 0) {

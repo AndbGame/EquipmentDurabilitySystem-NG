@@ -33,6 +33,7 @@ set(SOURCES
         src/Main.cpp
         src/FoundEquipData.cpp
         src/Events.cpp
+        src/FormLoader.cpp
         src/Settings.cpp)
 
 set(TESTS

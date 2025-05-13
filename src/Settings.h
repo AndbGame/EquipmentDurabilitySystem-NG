@@ -50,7 +50,8 @@ private:
 	void SetINIData3(std::list<CSimpleIniA::Entry> *list, const wchar_t* filename, CSimpleIniA *iniEnch);
 	void SetINIData4(std::list<CSimpleIniA::Entry> *list, const char* section, std::unordered_map<std::string, double> *map, CSimpleIniA *iniSettings);
 
-	
+	std::string KeywordLookup(uint32_t formid, std::string_view pluginname);
+	void KeywordInsert(std::unordered_map<std::string, double> *map, std::string editorID, double dValue);
 	void KeywordDecoder(std::unordered_map<std::string, double> *map, std::string materialType, double dValue);
 
 	void ShowSettings();

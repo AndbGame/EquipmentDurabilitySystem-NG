@@ -623,95 +623,133 @@ void INIFile::SetVendorList() {
 	logger::debug("Vendor Containers Found: {}", vendorContainers.size());
 }
 
+std::string INIFile::KeywordLookup(uint32_t formid, std::string_view pluginname) {
+	const auto dataHandler = RE::TESDataHandler::GetSingleton();
+	auto index = dataHandler->GetModIndex(pluginname);
+		
+	// If plugin exists
+	if (index && index.value() != 0xFF) {
+		RE::BGSKeyword* keyword = dataHandler->LookupForm(RE::FormID(formid), pluginname)->As<RE::BGSKeyword>();
+		std::string keyword_eid = keyword->GetFormEditorID();
+		ToLower(keyword_eid);
+		return keyword_eid;
+	} else
+		return "_None";
+}
+
+void INIFile::KeywordInsert(std::unordered_map<std::string, double> *map, std::string editorID, double dValue) {
+	// No Editor ID
+	if (editorID == "_None")
+		return;
+
+	// If Editor ID does not exist, add it to the map
+	auto it = map->find(editorID);
+    if (it == map->end())
+        map->insert(std::make_pair(editorID, dValue));
+}
+
 void INIFile::KeywordDecoder(std::unordered_map<std::string, double> *map, std::string materialType, double dValue) {
+
+	// Standard Plugins
+	const std::string_view pluginSkyrim = "Skyrim.esm";
+    const std::string_view pluginUpdate = "Update.esm";
+    const std::string_view pluginDawnguard = "Dawnguard.esm";
+    const std::string_view pluginDragonborn = "Dragonborn.esm";
 
 	// Fur, Leather, Iron, Steel, Silver, Elven, Bonemold, Falmer, Dwarven, Glass, Chitin, Orcish, Dragon, Ebony, Stalhrim, Daedric
 	if (stricmp(materialType.c_str(),"Daedric")) {
-		map->insert(std::make_pair("armormaterialdaedric", dValue));
-		map->insert(std::make_pair("weapmaterialdaedric", dValue));
+		KeywordInsert(map, KeywordLookup(0x06BBD4,pluginSkyrim), dValue); // ArmorMaterialDaedric
+		KeywordInsert(map, KeywordLookup(0x01E71F,pluginSkyrim), dValue); // WeapMaterialDaedric
 
 	} else if (stricmp(materialType.c_str(),"Dragon")) {
-		map->insert(std::make_pair("dlc1weapmaterialdragonbone", dValue));
-		map->insert(std::make_pair("armormaterialdragonscale", dValue));
-		map->insert(std::make_pair("armormaterialdragonplate", dValue));
+		KeywordInsert(map, KeywordLookup(0x06BBD5,pluginSkyrim), dValue); // ArmorMaterialDragonplate
+		KeywordInsert(map, KeywordLookup(0x06BBD6,pluginSkyrim), dValue); // ArmorMaterialDragonscale
+		KeywordInsert(map, KeywordLookup(0x019822,pluginDawnguard), dValue); // DLC1WeapMaterialDragonbone
 
 	} else if (stricmp(materialType.c_str(),"Ebony")) {
-		map->insert(std::make_pair("weapmaterialebony", dValue));
-		map->insert(std::make_pair("armormaterialebony", dValue));
+		KeywordInsert(map, KeywordLookup(0x06BBD8,pluginSkyrim), dValue); // ArmorMaterialEbony
+		KeywordInsert(map, KeywordLookup(0x01E71E,pluginSkyrim), dValue); // WeapMaterialEbony
 
 	} else if (stricmp(materialType.c_str(),"Stalhrim")) {
-		map->insert(std::make_pair("dlc2weaponmaterialstalhrim", dValue));
-		map->insert(std::make_pair("dlc2armormaterialstalhrimheavy", dValue));
-		map->insert(std::make_pair("dlc2armormaterialstalhrimlight", dValue));
+		KeywordInsert(map, KeywordLookup(0x02622F,pluginDragonborn), dValue); // DLC2WeaponMaterialStalhrim
+		KeywordInsert(map, KeywordLookup(0x024106,pluginDragonborn), dValue); // DLC2ArmorMaterialStalhrimHeavy
+		KeywordInsert(map, KeywordLookup(0x024107,pluginDragonborn), dValue); // DLC2ArmorMaterialStalhrimLight
 
 	} else if (stricmp(materialType.c_str(),"Orcish")) {
-		map->insert(std::make_pair("weapmaterialorcish", dValue));
-		map->insert(std::make_pair("armormaterialorcish", dValue));
+		KeywordInsert(map, KeywordLookup(0x06BBE5,pluginSkyrim), dValue); // ArmorMaterialOrcish
+		KeywordInsert(map, KeywordLookup(0x01E71C,pluginSkyrim), dValue); // WeapMaterialOrcish
 
 	} else if (stricmp(materialType.c_str(),"Glass")) {
-		map->insert(std::make_pair("weapmaterialglass", dValue));
-		map->insert(std::make_pair("armormaterialglass", dValue));
+		KeywordInsert(map, KeywordLookup(0x06BBDC,pluginSkyrim), dValue); // ArmorMaterialGlass
+		KeywordInsert(map, KeywordLookup(0x01E71D,pluginSkyrim), dValue); // WeapMaterialGlass
 
 	} else if (stricmp(materialType.c_str(),"Dwarven")) {
-		map->insert(std::make_pair("weapmaterialdwarven", dValue));
-		map->insert(std::make_pair("armormaterialdwarven", dValue));
-
+		KeywordInsert(map, KeywordLookup(0x06BBD7,pluginSkyrim), dValue); // ArmorMaterialDwarven
+		KeywordInsert(map, KeywordLookup(0x01E71A,pluginSkyrim), dValue); // WeapMaterialDwarven
+		
 	} else if (stricmp(materialType.c_str(),"Chitin")) {
-		map->insert(std::make_pair("dlc2armormaterialchitinheavy", dValue));
-		map->insert(std::make_pair("dlc2armormaterialchitinlight", dValue));
-		map->insert(std::make_pair("dlc2armormaterialmoragtong", dValue));
-
+		KeywordInsert(map, KeywordLookup(0x024103,pluginDragonborn), dValue); // DLC2ArmorMaterialChitinHeavy
+		KeywordInsert(map, KeywordLookup(0x024102,pluginDragonborn), dValue); // DLC2ArmorMaterialChitinLight
+		KeywordInsert(map, KeywordLookup(0x03A328,pluginDragonborn), dValue); // DLC2ArmorMaterialMoragTong
 
 	} else if (stricmp(materialType.c_str(),"Falmer")) {
-		map->insert(std::make_pair("weapmaterialfalmer", dValue));
-		map->insert(std::make_pair("weapmaterialfalmerhoned", dValue));
-		map->insert(std::make_pair("dlc1armormaterielfalmerheavy", dValue));
-		map->insert(std::make_pair("dlc1armormaterielfalmerheavyoriginal", dValue));
-		map->insert(std::make_pair("dlc1armormaterialfalmerhardened", dValue));
+		KeywordInsert(map, KeywordLookup(0x0C5C03,pluginSkyrim), dValue); // WeapMaterialFalmer
+		KeywordInsert(map, KeywordLookup(0x0C5C04,pluginSkyrim), dValue); // WeapMaterialFalmerHoned
+		KeywordInsert(map, KeywordLookup(0x0009BD,pluginUpdate), dValue); // ArmorMaterialFalmer
+		KeywordInsert(map, KeywordLookup(0x012CCF,pluginDawnguard), dValue); // DLC1ArmorMaterielFalmerHeavy
+		KeywordInsert(map, KeywordLookup(0x012CD0,pluginDawnguard), dValue); // DLC1ArmorMaterielFalmerHeavyOriginal
+		KeywordInsert(map, KeywordLookup(0x012CCE,pluginDawnguard), dValue); // DLC1ArmorMaterialFalmerHardened
 
 	} else if (stricmp(materialType.c_str(),"Bonemold")) {
-		map->insert(std::make_pair("dlc2armormaterialbonemoldheavy", dValue));
+		KeywordInsert(map, KeywordLookup(0x024101,pluginDragonborn), dValue); // DLC2ArmorMaterialBonemoldHeavy
+		KeywordInsert(map, KeywordLookup(0x024100,pluginDragonborn), dValue); // DLC2ArmorMaterialBonemoldLight
 
 	} else if (stricmp(materialType.c_str(),"Elven")) {
-		map->insert(std::make_pair("weapmaterialelven", dValue));
-		map->insert(std::make_pair("armormaterialelven", dValue));
-		map->insert(std::make_pair("armormaterialelvengilded", dValue));
+		KeywordInsert(map, KeywordLookup(0x01E71B,pluginSkyrim), dValue); // WeapMaterialElven
+		KeywordInsert(map, KeywordLookup(0x06BBD9,pluginSkyrim), dValue); // ArmorMaterialElven
+		KeywordInsert(map, KeywordLookup(0x06BBDA,pluginSkyrim), dValue); // ArmorMaterialElvenGilded
 
 	} else if (stricmp(materialType.c_str(),"Silver")) {
-		map->insert(std::make_pair("weapmaterialsilver", dValue));
+		KeywordInsert(map, KeywordLookup(0x10AA1A,pluginSkyrim), dValue); // WeapMaterialSilver
 
 	} else if (stricmp(materialType.c_str(),"Steel")) {
-		map->insert(std::make_pair("weapmaterialsteel", dValue));
-		map->insert(std::make_pair("weapmaterialimperial", dValue));
-		map->insert(std::make_pair("weapmaterialdraugr", dValue));
-		map->insert(std::make_pair("weapmaterialdraugrhoned", dValue));
-		map->insert(std::make_pair("dlc2weaponmaterialnordic", dValue));
-		map->insert(std::make_pair("armormaterialsteel", dValue));
-		map->insert(std::make_pair("armormaterialscaled", dValue));
-		map->insert(std::make_pair("armormaterialblades", dValue));
-		map->insert(std::make_pair("armormaterialimperialheavy", dValue));
-		map->insert(std::make_pair("armormaterialpenitus", dValue));
-		map->insert(std::make_pair("dlc2armormaterialnordicheavy", dValue));
-		map->insert(std::make_pair("armormaterialsteelplate", dValue));
-		map->insert(std::make_pair("dlc1armormaterialdawnguard", dValue));
-		map->insert(std::make_pair("dlc1armormaterialhunter", dValue));
+		KeywordInsert(map, KeywordLookup(0x01E719,pluginSkyrim), dValue); // WeapMaterialSteel
+		KeywordInsert(map, KeywordLookup(0x0C5C00,pluginSkyrim), dValue); // WeapMaterialImperial
+		KeywordInsert(map, KeywordLookup(0x0C5C01,pluginSkyrim), dValue); // WeapMaterialDraugr
+		KeywordInsert(map, KeywordLookup(0x0C5C02,pluginSkyrim), dValue); // WeapMaterialDraugrHoned
+		KeywordInsert(map, KeywordLookup(0x06BBE6,pluginSkyrim), dValue); // ArmorMaterialSteel
+		KeywordInsert(map, KeywordLookup(0x06BBE7,pluginSkyrim), dValue); // ArmorMaterialSteelPlate
+		KeywordInsert(map, KeywordLookup(0x06BBDE,pluginSkyrim), dValue); // ArmorMaterialScaled
+		KeywordInsert(map, KeywordLookup(0x06BBE2,pluginSkyrim), dValue); // ArmorMaterialImperialHeavy
+		KeywordInsert(map, KeywordLookup(0x0009C0,pluginUpdate), dValue); // ArmorMaterialBlades
+		KeywordInsert(map, KeywordLookup(0x0009BB,pluginUpdate), dValue); // ArmorMaterialPenitus
+		KeywordInsert(map, KeywordLookup(0x012CCD,pluginDawnguard), dValue); // DLC1ArmorMaterialDawnguard
+		KeywordInsert(map, KeywordLookup(0x0050C4,pluginDawnguard), dValue); // DLC1ArmorMaterialHunter
+		KeywordInsert(map, KeywordLookup(0x026230,pluginDragonborn), dValue); // DLC2WeaponMaterialNordic
+		KeywordInsert(map, KeywordLookup(0x024105,pluginDragonborn), dValue); // DLC2ArmorMaterialNordicHeavy
+		KeywordInsert(map, KeywordLookup(0x024104,pluginDragonborn), dValue); // DLC2ArmorMaterialNordicLight
 
 	} else if (stricmp(materialType.c_str(),"Iron")) {
-		map->insert(std::make_pair("weapmaterialiron", dValue));
-		map->insert(std::make_pair("armormaterialiron", dValue));
-		map->insert(std::make_pair("armormaterialironbanded", dValue));
-		map->insert(std::make_pair("armormaterialimperialstudded", dValue));
-		map->insert(std::make_pair("armormaterialstudded", dValue));
+		KeywordInsert(map, KeywordLookup(0x01E718,pluginSkyrim), dValue); // WeapMaterialIron
+		KeywordInsert(map, KeywordLookup(0x06BBE3,pluginSkyrim), dValue); // ArmorMaterialIron
+		KeywordInsert(map, KeywordLookup(0x06BBE4,pluginSkyrim), dValue); // ArmorMaterialIronBanded
+		KeywordInsert(map, KeywordLookup(0x06BBE1,pluginSkyrim), dValue); // ArmorMaterialImperialStudded
+		KeywordInsert(map, KeywordLookup(0x06BBDF,pluginSkyrim), dValue); // ArmorMaterialStudded
 
 	} else if (stricmp(materialType.c_str(),"Leather")) {
-		map->insert(std::make_pair("armormaterialleather", dValue));
-		map->insert(std::make_pair("armormaterialimperiallight", dValue));
-		map->insert(std::make_pair("dlc1armormaterialvampire", dValue));
+		KeywordInsert(map, KeywordLookup(0x06BBDB,pluginSkyrim), dValue); // ArmorMaterialLeather
+		KeywordInsert(map, KeywordLookup(0x06BBE0,pluginSkyrim), dValue); // ArmorMaterialImperialLight
+		KeywordInsert(map, KeywordLookup(0x0009B9,pluginUpdate), dValue); // ArmorMaterialForsworn
+		KeywordInsert(map, KeywordLookup(0x0009BC,pluginUpdate), dValue); // ArmorMaterialThievesGuild
+		KeywordInsert(map, KeywordLookup(0x0009BF,pluginUpdate), dValue); // ArmorMaterialThievesGuildLeader
+		KeywordInsert(map, KeywordLookup(0x0009BE,pluginUpdate), dValue); // ArmorMaterialBearStormcloak
+		KeywordInsert(map, KeywordLookup(0x01463E,pluginDawnguard), dValue); // DLC1ArmorMaterialVampire
 
 	} else if (stricmp(materialType.c_str(),"Fur")) {
-		map->insert(std::make_pair("armormaterialhide", dValue));
-		map->insert(std::make_pair("armormaterialstormcloak", dValue));
-
+		KeywordInsert(map, KeywordLookup(0x01E717,pluginSkyrim), dValue); // WeapMaterialWood
+		KeywordInsert(map, KeywordLookup(0x06BBDD,pluginSkyrim), dValue); // ArmorMaterialHide
+		KeywordInsert(map, KeywordLookup(0x0AC13A,pluginSkyrim), dValue); // ArmorMaterialStormcloak
+		KeywordInsert(map, KeywordLookup(0x0009BA,pluginUpdate), dValue); // ArmorMaterialMS02Forsworn
 	}
 
 }
